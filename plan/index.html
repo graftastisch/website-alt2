@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wochenplan</title>
+  <meta name="description" content="Persönlicher Wochenplan im Stundenplan-Look">
+  <meta name="theme-color" content="#f5f5f7">
+  <link rel="stylesheet" href="style.css">
+  <!-- Login: ohne Anmeldung geht es sofort zu /login -->
+  <script src="../assets/config.js"></script>
+  <script src="../assets/auth.js"></script>
+  <script>Auth.guard('../login/');</script>
+</head>
+<body>
+  <div class="window">
+    <header class="toolbar">
+      <button type="button" class="icon-btn" id="sidebarToggle" aria-expanded="true" aria-controls="palette"
+              aria-label="Seitenleiste ein- oder ausblenden" title="Seitenleiste ein- oder ausblenden">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="14" rx="3"/>
+          <path d="M7.7 8.2v7.6"/>
+        </svg>
+      </button>
+      <h1>Wochenplan</h1>
+      <span class="sync" id="syncState" role="status" aria-live="polite"></span>
+      <a class="who" id="whoAmI" href="../login/" title="Konto" hidden></a>
+      <button type="button" class="btn small" id="logoutBtn" hidden>Abmelden</button>
+    </header>
+    <main class="layout">
+      <aside class="palette" id="palette" aria-label="Felder">
+        <div class="palette-inner">
+          <h2>Felder</h2>
+          <div class="palette-list" id="paletteList"></div>
+          <div class="palette-actions">
+            <button type="button" class="btn wide" id="addCustom">＋ Neues Feld</button>
+            <button type="button" class="btn wide" id="addEvent">＋ Neuer Termin</button>
+          </div>
+        </div>
+      </aside>
+      <section class="planner" aria-label="Wochenplan">
+        <div class="week" id="week"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Termin: Ansehen & Bearbeiten -->
+  <dialog id="eventDialog" aria-labelledby="vTitle">
+    <div class="sheet" id="viewPane">
+      <header class="sheet-head">
+        <span class="badge" id="vEmoji"></span>
+        <div class="head-text">
+          <h2 id="vTitle"></h2>
+          <p id="vWhen"></p>
+        </div>
+        <button type="button" class="x" data-close aria-label="Schliessen">×</button>
+      </header>
+      <p id="vDesc" class="desc"></p>
+      <section id="vLocWrap">
+        <h3>Ort</h3>
+        <p id="vLoc" class="loc"></p>
+        <div id="vMap"></div>
+      </section>
+      <section id="vMediaWrap">
+        <h3>Bilder &amp; Videos</h3>
+        <div id="vMedia"></div>
+      </section>
+      <footer class="actions">
+        <button type="button" class="btn danger" id="vDelete">Löschen</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn ghost" id="vEdit">Bearbeiten</button>
+        <button type="button" class="btn primary" data-close>Schliessen</button>
+      </footer>
+    </div>
+
+    <form class="sheet" id="editPane" hidden autocomplete="off">
+      <header class="sheet-head">
+        <span class="badge" id="fBadge"></span>
+        <div class="head-text">
+          <h2 id="fHeading">Neuer Termin</h2>
+          <p>Nur der Titel ist wichtig – alles andere ist optional.</p>
+        </div>
+        <button type="button" class="x" data-close aria-label="Schliessen">×</button>
+      </header>
+
+      <label class="field">
+        <span>Titel</span>
+        <input id="fTitle" maxlength="80" placeholder="z. B. Fussballtraining">
+      </label>
+
+      <div class="grid2">
+        <label class="field"><span>Feldart</span><select id="fTpl"></select></label>
+        <label class="field"><span>Tag</span><select id="fDay"></select></label>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>Von</span><input id="fStart" type="time" step="300" required></label>
+        <label class="field"><span>Bis</span><input id="fEnd" type="time" step="300" required></label>
+      </div>
+
+      <label class="field">
+        <span>Beschreibung</span>
+        <textarea id="fDesc" rows="3" placeholder="Notizen, Mitnehmen, Erinnerungen …"></textarea>
+      </label>
+
+      <div class="field">
+        <label for="fLoc"><span>Ort</span></label>
+        <div class="row">
+          <input id="fLoc" placeholder="Adresse oder Ortsname">
+          <button type="button" class="btn ghost" id="fLocBtn">Karte</button>
+        </div>
+        <small id="fLocMsg" class="msg"></small>
+        <div id="fMap"></div>
+      </div>
+
+      <div class="field">
+        <span>Bilder &amp; Videos</span>
+        <div class="row">
+          <label class="btn ghost filebtn">📷 Dateien wählen
+            <input type="file" id="fFiles" accept="image/*,video/*" multiple hidden>
+          </label>
+        </div>
+        <div class="row">
+          <input id="fLink" type="url" placeholder="YouTube-, Vimeo-, Bild- oder Video-Link">
+          <button type="button" class="btn ghost" id="fLinkBtn">Hinzufügen</button>
+        </div>
+        <div id="fMedia"></div>
+      </div>
+
+      <footer class="actions">
+        <button type="button" class="btn danger" id="fDelete">Löschen</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn ghost" data-close>Abbrechen</button>
+        <button type="submit" class="btn primary" id="fSave">Speichern</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Feld erstellen / bearbeiten -->
+  <dialog id="customDialog" aria-labelledby="cHeading">
+    <form class="sheet small" id="customForm" autocomplete="off">
+      <header class="sheet-head">
+        <span class="badge" id="cBadge">⭐</span>
+        <div class="head-text">
+          <h2 id="cHeading">Neues Feld</h2>
+          <p id="cSub">Erscheint in der Seitenleiste und lässt sich in den Plan ziehen.</p>
+        </div>
+        <button type="button" class="x" data-close aria-label="Schliessen">×</button>
+      </header>
+      <div class="grid2 name-row">
+        <label class="field"><span>Name</span><input id="cName" maxlength="24" required placeholder="z. B. Musik"></label>
+        <label class="field"><span>Symbol</span><input id="cEmoji" maxlength="4" value="⭐" class="emoji-input"></label>
+      </div>
+      <div class="field">
+        <span>Farbe</span>
+        <div class="row swatches" id="cSwatches"></div>
+        <input id="cColor" type="color" value="#007aff" aria-label="Eigene Farbe">
+      </div>
+      <label class="field">
+        <span>Standarddauer</span>
+        <select id="cDur">
+          <option value="30">30 Minuten</option>
+          <option value="60" selected>1 Stunde</option>
+          <option value="90">1,5 Stunden</option>
+          <option value="120">2 Stunden</option>
+          <option value="180">3 Stunden</option>
+          <option value="240">4 Stunden</option>
+        </select>
+      </label>
+      <footer class="actions">
+        <span class="spacer"></span>
+        <button type="button" class="btn ghost" data-close>Abbrechen</button>
+        <button type="submit" class="btn primary" id="cSubmit">Feld erstellen</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

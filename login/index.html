@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anmelden</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#e9e9ec">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="wrap">
+    <!-- Anmelden -->
+    <section class="card" id="loginView" hidden>
+      <p class="brand">graftastisch</p>
+      <h1>Anmelden</h1>
+      <form id="loginForm" novalidate>
+        <label class="field"><span>Nutzername</span>
+          <input id="user" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="120">
+        </label>
+        <label class="field"><span>Passwort</span>
+          <input id="pass" type="password" autocomplete="current-password" maxlength="200">
+        </label>
+        <p class="msg" id="loginMsg" role="alert" hidden></p>
+        <button class="btn primary wide" id="loginBtn" type="submit">Anmelden</button>
+      </form>
+    </section>
+
+    <!-- Konto (bereits angemeldet) -->
+    <section class="card" id="accountView" hidden>
+      <p class="brand">graftastisch</p>
+      <h1>Hallo, <span id="name"></span></h1>
+      <nav class="apps" aria-label="Anwendungen">
+        <a class="app" href="../plan/"><span class="ico" aria-hidden="true">📅</span>Wochenplan</a>
+      </nav>
+      <details class="pw" id="pwBox">
+        <summary>Passwort ändern</summary>
+        <form id="pwForm" autocomplete="off" novalidate>
+          <label class="field"><span>Neues Passwort</span><input id="pw1" type="password" autocomplete="new-password" maxlength="200"></label>
+          <label class="field"><span>Neues Passwort wiederholen</span><input id="pw2" type="password" autocomplete="new-password" maxlength="200"></label>
+          <p class="msg" id="pwMsg" role="status" hidden></p>
+          <button class="btn wide" id="pwBtn" type="submit">Passwort speichern</button>
+        </form>
+      </details>
+      <button class="btn wide" id="logoutBtn" type="button">Abmelden</button>
+    </section>
+
+    <p class="msg err" id="fatal" role="alert" hidden></p>
+  </main>
+
+  <script src="../assets/config.js"></script>
+  <script src="../assets/auth.js"></script>
+  <script src="login.js"></script>
+</body>
+</html>
